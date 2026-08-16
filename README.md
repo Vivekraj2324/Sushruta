@@ -1,8 +1,22 @@
 # 🏥 Sushruta — Clinical Workflow Automation Platform
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-00c7b7?style=for-the-badge&logo=render&logoColor=white)](https://sushruta-bzgf.onrender.com/)
-[![API Docs](https://img.shields.io/badge/Swagger%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://sushruta-bzgf.onrender.com/docs)
+<div align="center">
+
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-sushruta.onrender.com-00c7b7?style=for-the-badge&logo=render&logoColor=white)](https://sushruta-bzgf.onrender.com/)
+[![API Swagger Docs](https://img.shields.io/badge/📑%20API%20Docs-Swagger%20UI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://sushruta-bzgf.onrender.com/docs)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://supabase.com)
+[![Gemini AI](https://img.shields.io/badge/AI-Google%20Gemini%202.5-8E75C2?style=for-the-badge&logo=google-gemini&logoColor=white)](https://aistudio.google.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg?style=for-the-badge)](LICENSE)
+
+<br/>
+
+**[🔗 Open Live Web Dashboard](https://sushruta-bzgf.onrender.com/)** • **[📑 Explore Interactive Swagger API](https://sushruta-bzgf.onrender.com/docs)** • **[📚 ReDoc Reference](https://sushruta-bzgf.onrender.com/redoc)**
+
+</div>
+
+---
 
 > **"Every clinical note tells a patient's story. Sushruta ensures physicians spend their time treating, not documenting."**
 > 
@@ -10,8 +24,23 @@
 >
 > Sushruta is a production-grade clinical workflow automation platform that streamlines patient management, AI-assisted SOAP documentation (Scribe), drug interaction checking, referral letter generation, and intelligent medical document querying (RAG) for healthcare professionals. Built with a fully asynchronous Python backend (FastAPI), modern EHR dashboard, and PostgreSQL (pgvector).
 
-🌐 **Live Application:** [https://sushruta-bzgf.onrender.com](https://sushruta-bzgf.onrender.com)  
-📑 **Interactive API Docs:** [https://sushruta-bzgf.onrender.com/docs](https://sushruta-bzgf.onrender.com/docs)
+---
+
+## ✦ 🌐 Live Interactive Demo
+
+Test Sushruta live in production without any local setup:
+
+| Service | Link | Features & Purpose |
+| :--- | :--- | :--- |
+| 🏥 **EHR Clinical Portal** | **[sushruta-bzgf.onrender.com](https://sushruta-bzgf.onrender.com/)** | Full Doctor Dashboard — AI Voice Scribe, SOAP Note Generator, RAG Document Q&A, Drug Safety Checker |
+| 📑 **Interactive Swagger Docs** | **[sushruta-bzgf.onrender.com/docs](https://sushruta-bzgf.onrender.com/docs)** | Direct API exploration with interactive OpenAPI/Swagger schema and token authentication |
+| 📚 **ReDoc Documentation** | **[sushruta-bzgf.onrender.com/redoc](https://sushruta-bzgf.onrender.com/redoc)** | Clean, human-readable API technical reference |
+
+> [!TIP]
+> **Quick Test Steps:**
+> 1. Open the **[Live EHR Dashboard](https://sushruta-bzgf.onrender.com/)**.
+> 2. Click the **Register** tab to create an instant doctor account (e.g. `doctor@hospital.com`).
+> 3. Create a patient record and try generating notes with the **AI Scribe Voice Dictation** button or asking questions over patient documents with **RAG Q&A**!
 
 ---
 
