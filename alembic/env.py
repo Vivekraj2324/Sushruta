@@ -37,6 +37,9 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
+# Import the declarative Base whose .metadata contains all table definitions.
+from app.db.database import Base  # noqa: F401
+
 # Import every model module so that the ORM classes are registered on
 # Base.metadata BEFORE Alembic inspects it for autogenerate.  Even though
 # we don't reference these names directly, the import triggers class
