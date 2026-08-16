@@ -197,18 +197,49 @@ For local development:
 
 ---
 
+## ✦ Production Deployment (Render + Supabase)
+
+### 1. Database Setup (Supabase)
+1. Create a free project on [Supabase](https://supabase.com).
+2. Enable `pgvector` in the **SQL Editor**:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
+3. Copy your database connection URI from **Connect** → **Session pooler** (IPv4).
+
+### 2. Web Service Setup (Render)
+1. Create a new **Web Service** on [Render](https://render.com) and connect your GitHub repository (`Vivekraj2324/Sushruta`).
+2. Select **Runtime:** `Docker` and **Plan:** `Free`.
+3. Set the following **Environment Variables**:
+
+| Variable | Value / Description |
+| :--- | :--- |
+| `DATABASE_URL` | `postgresql+asyncpg://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres` |
+| `SECRET_KEY` | *(A secure 32+ character random string)* |
+| `GEMINI_API_KEY` | *(Google AI Studio Gemini API Key)* |
+| `ENVIRONMENT` | `production` |
+
+4. Click **Deploy Web Service**. Render will automatically build the Docker image, run migrations, and launch the application.
+
+---
+
 ## ✦ Testing & Evaluation
 
 ### Run standard tests
 ```bash
-.\venv\Scripts\python.exe -m pytest
+pytest -v
 ```
 
 ### Run programmatic RAG evaluation pipeline
 ```bash
-.\venv\Scripts\python.exe -m tests.evaluate_rag
+python -m tests.evaluate_rag
 ```
 This prints the context recall and faithfulness metrics tabular report to stdout and writes the results to `rag_eval_results.json` and `rag_eval_results.md`.
+
+---
+
+## ✦ Author & Contributor
+* **Vivek Raj** — [@Vivekraj2324](https://github.com/Vivekraj2324) — [thevivek2324@gmail.com](mailto:thevivek2324@gmail.com)
 
 ---
 
