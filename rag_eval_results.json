@@ -1,0 +1,59 @@
+{
+    "summary": {
+        "total_queries": 3,
+        "average_context_recall": 0.9166666666666666,
+        "average_answer_faithfulness": 0.9166666666666666,
+        "average_overall_score": 0.9166666666666666,
+        "status": "PASS"
+    },
+    "results": [
+        {
+            "query": "What are the patient's active allergies?",
+            "retrieved_context": "Allergy Profile: Penicillin (severe anaphylaxis) and Peanuts (mild hives).",
+            "generated_answer": "The patient has a severe anaphylactic allergy to Penicillin and a mild allergic reaction (hives) to Peanuts.",
+            "expected_concepts": [
+                "penicillin",
+                "anaphylaxis",
+                "peanuts",
+                "hives"
+            ],
+            "metrics": {
+                "context_recall": 1.0,
+                "answer_faithfulness": 0.75,
+                "overall_score": 0.875
+            }
+        },
+        {
+            "query": "Summarise the patient's cardiovascular symptoms.",
+            "retrieved_context": "Cardiology Note: Patient reports intermittent chest pain radiating to the left arm, accompanied by mild shortness of breath during exertion.",
+            "generated_answer": "The patient experienced intermittent chest pain radiating to the left arm and mild shortness of breath on exertion.",
+            "expected_concepts": [
+                "chest pain",
+                "left arm",
+                "shortness of breath",
+                "exertion"
+            ],
+            "metrics": {
+                "context_recall": 1.0,
+                "answer_faithfulness": 1.0,
+                "overall_score": 1.0
+            }
+        },
+        {
+            "query": "Is there any history of diabetes in the patient?",
+            "retrieved_context": "Endocrine Review: Patient has no documented history of diabetes mellitus, blood glucose levels are normal (Fasting 85 mg/dL).",
+            "generated_answer": "No history of diabetes mellitus is documented. The fasting blood glucose level was normal at 85 mg/dL.",
+            "expected_concepts": [
+                "no history",
+                "diabetes",
+                "glucose",
+                "normal"
+            ],
+            "metrics": {
+                "context_recall": 0.75,
+                "answer_faithfulness": 1.0,
+                "overall_score": 0.875
+            }
+        }
+    ]
+}

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sushruta AI — Premium Clinical Portal</title>
+    <!-- Google Fonts: Inter and Outfit for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for medical & utility icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script defer src="/static/app.js"></script>
+</head>
+<body>
+    <!-- ── AUTHENTICATION OVERLAY ── -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-staff-snake"></i>
+                </div>
+                <h1>Sushruta AI</h1>
+                <p>Father of Surgery — Clinical Workflow Automation</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button id="tab-login-btn" class="auth-tab-btn active" onclick="toggleAuthTab('login')">Login</button>
+                <button id="tab-register-btn" class="auth-tab-btn" onclick="toggleAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@hospital.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <div id="login-error" class="error-msg hidden"></div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Login</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-name"><i class="fa-solid fa-user-doctor"></i> Full Name</label>
+                        <input type="text" id="reg-name" required placeholder="Dr. Jane Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                        <input type="email" id="reg-email" required pattern="[^@\s]+@[^@\s]+\.[^@\s\.]+" placeholder="jane.doe@hospital.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-license"><i class="fa-solid fa-id-card"></i> License Number</label>
+                        <input type="text" id="reg-license" required placeholder="MCI-99887-2023">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-specialisation"><i class="fa-solid fa-stethoscope"></i> Specialisation</label>
+                        <input type="text" id="reg-specialisation" placeholder="e.g. Cardiology, General Medicine">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password"><i class="fa-solid fa-lock"></i> Password (min 8 chars)</label>
+                    <input type="password" id="reg-password" required minlength="8" placeholder="••••••••">
+                </div>
+                <div id="register-error" class="error-msg hidden"></div>
+                <div id="register-success" class="success-msg hidden">Registration successful! Switching to login...</div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Register Account</span> <i class="fa-solid fa-user-plus"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── APP MAIN INTERFACE ── -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar: Patients Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="fa-solid fa-staff-snake"></i>
+                    <span>Sushruta AI</span>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()" title="Logout">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+
+            <!-- Doctor Profile Widget -->
+            <div id="doctor-profile-widget" class="doctor-profile-widget">
+                <div class="avatar"><i class="fa-solid fa-user-md"></i></div>
+                <div class="doc-info">
+                    <h4 id="doc-name">Dr. Loading...</h4>
+                    <span id="doc-spec">Specialisation</span>
+                    <span id="doc-license" class="badge-license">License</span>
+                </div>
+            </div>
+
+            <!-- Patient Management Controls -->
+            <div class="patients-search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="patient-search-input" placeholder="Search patients..." oninput="handlePatientSearch()">
+            </div>
+
+            <div class="sidebar-actions">
+                <button class="btn btn-secondary btn-block" onclick="openAddPatientModal()">
+                    <i class="fa-solid fa-circle-plus"></i> Add New Patient
+                </button>
+            </div>
+
+            <!-- Patients List -->
+            <div class="patient-list-wrapper">
+                <h3>Patients <span id="patient-count">(0)</span></h3>
+                <div id="patient-list" class="patient-list">
+                    <!-- Dynamic rendering -->
+                    <div class="list-empty">Loading patients...</div>
+                </div>
+                <!-- Pagination Controls -->
+                <div class="pagination-controls">
+                    <button id="prev-page-btn" onclick="changePatientPage(-1)" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <span id="page-indicator">Page 1</span>
+                    <button id="next-page-btn" onclick="changePatientPage(1)" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="main-workspace">
+            <!-- Empty state when no patient is selected -->
+            <div id="empty-state" class="empty-state">
+                <div class="empty-state-content">
+                    <div class="art-icon"><i class="fa-solid fa-chart-line-medical"></i></div>
+                    <h2>Welcome to Sushruta AI</h2>
+                    <p>Select a patient from the sidebar or add a new patient to access clinical summaries, AI note generation, RAG document analysis, and drug interaction reports.</p>
+                </div>
+            </div>
+
+            <!-- Active Workspace (Visible when patient selected) -->
+            <div id="active-workspace" class="active-workspace hidden">
+                <!-- Patient Profile Banner -->
+                <section class="patient-banner">
+                    <div class="patient-avatar">
+                        <i class="fa-solid fa-user-injured"></i>
+                    </div>
+                    <div class="patient-banner-details">
+                        <div class="patient-banner-title">
+                            <h2 id="banner-patient-name">Patient Name</h2>
+                            <span id="banner-patient-gender" class="badge badge-info">Gender</span>
+                            <span id="banner-patient-age" class="badge badge-secondary">Age</span>
+                            <span id="banner-patient-blood" class="badge badge-blood">Blood Group</span>
+                        </div>
+                        <div class="patient-banner-meta">
+                            <div class="meta-item">
+                                <strong>Allergies:</strong>
+                                <span id="banner-patient-allergies" class="allergies-text">None</span>
+                            </div>
+                            <div class="meta-item">
+                                <strong>Medical History:</strong>
+                                <span id="banner-patient-history">None recorded.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="banner-actions">
+                        <button class="btn btn-outline" onclick="openEditPatientModal()"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button class="btn btn-outline btn-danger" onclick="confirmDeletePatient()"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                    </div>
+                </section>
+
+                <!-- Navigation Tabs -->
+                <nav class="workspace-tabs">
+                    <button id="tab-summary" class="tab-link active" onclick="switchTab('summary')">
+                        <i class="fa-solid fa-file-medical"></i> Clinical Summary & Referral
+                    </button>
+                    <button id="tab-scribe" class="tab-link" onclick="switchTab('scribe')">
+                        <i class="fa-solid fa-microphone-lines"></i> AI Scribe (SOAP Notes)
+                    </button>
+                    <button id="tab-documents" class="tab-link" onclick="switchTab('documents')">
+                        <i class="fa-solid fa-folder-open"></i> Document Hub & RAG
+                    </button>
+                    <button id="tab-interactions" class="tab-link" onclick="switchTab('interactions')">
+                        <i class="fa-solid fa-capsules"></i> Drug Interaction Checker
+                    </button>
+                </nav>
+
+                <!-- Workspace Content Panels -->
+                <div class="tab-content">
+                    
+                    <!-- ── TAB 1: SUMMARY & REFERRAL ── -->
+                    <div id="panel-summary" class="tab-panel active">
+                        <div class="summary-grid">
+                            <!-- AI Clinical Summary -->
+                            <div class="card summary-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-sparkles text-accent"></i> AI Patient Summary</h3>
+                                    <button class="btn btn-sm btn-outline" onclick="generatePatientSummary(true)">
+                                        <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="summary-loader" class="loader-container hidden">
+                                        <div class="spinner"></div>
+                                        <p>Analyzing patient records and notes...</p>
+                                    </div>
+                                    <div id="summary-content" class="markdown-body">
+                                        <!-- Render summary -->
+                                    </div>
+                                    <div id="summary-empty" class="panel-empty-state">
+                                        <p>No summary generated yet. Click Regenerate to compile the patient summary.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Referral Letter Generator -->
+                            <div class="card referral-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-envelope-open-text text-accent"></i> Referral Letter Generator</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form id="referral-form" onsubmit="handleGenerateReferral(event)">
+                                        <div class="form-group">
+                                            <label for="referral-specialist">Target Specialist / Facility</label>
+                                            <input type="text" id="referral-specialist" required placeholder="e.g. Dr. Ramesh Gupta (Cardiology)">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="referral-reason">Clinical Reason for Referral (min 10 chars)</label>
+                                            <textarea id="referral-reason" required rows="3" placeholder="Provide detailed reasoning for referring the patient..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <span>Generate Letter</span> <i class="fa-solid fa-file-signature"></i>
+                                        </button>
+                                    </form>
+
+                                    <div id="referral-loader" class="loader-container hidden">
+                                        <div class="spinner"></div>
+                                        <p>Drafting formal referral letter...</p>
+                                    </div>
+
+                                    <div id="referral-letter-result" class="referral-letter-result hidden">
+                                        <hr>
+                                        <div class="letter-actions">
+                                            <h4>Generated Letter</h4>
+                                            <button class="btn btn-sm btn-outline" onclick="copyReferralLetter()">
+                                                <i class="fa-solid fa-copy"></i> Copy Text
+                                            </button>
+                                        </div>
+                                        <div id="referral-letter-body" class="letter-paper">
+                                            <!-- Generated referral letter -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 2: AI SOAP SCRIBE ── -->
+                    <div id="panel-scribe" class="tab-panel">
+                        <div class="scribe-grid">
+                            <!-- Scribe Dictation Input -->
+                            <div class="card dictation-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-wand-magic-sparkles text-accent"></i> Clinical Dictation Input</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="section-help">Paste raw conversation transcript, clinical shorthand, or dictated examination findings below. The AI scribe will compile this into a structured SOAP clinical note.</p>
+                                    <form id="scribe-form" onsubmit="handleGenerateSOAP(event)">
+                                        <div class="form-group dictation-input-container">
+                                            <textarea id="scribe-raw-input" required rows="10" placeholder="e.g. Patient presents with dry cough for 3 weeks, worse at night. Denies fever or shortness of breath. Checked vitals: BP 120/80, HR 72, temp 98.6. Lungs clear to auscultation. Plan: Start dextromethorphan 10ml q6h as needed. Advise follow up if symptoms worsen."></textarea>
+                                            <button type="button" id="scribe-mic-btn" class="scribe-mic-btn" title="Start voice dictation" onclick="toggleDictationMic()">
+                                                <i class="fa-solid fa-microphone"></i>
+                                            </button>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <span>Generate SOAP Note</span> <i class="fa-solid fa-brain"></i>
+                                        </button>
+                                    </form>
+                                    <div id="scribe-loader" class="loader-container hidden">
+                                        <div class="spinner"></div>
+                                        <p>Analyzing shorthand and drafting SOAP fields...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SOAP Notes Manager -->
+                            <div class="card notes-manager-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-notes-medical text-accent"></i> Recorded SOAP Notes</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recorded-notes-list" class="recorded-notes-list">
+                                        <!-- Dynamic rendering of past notes -->
+                                        <div class="list-empty">No clinical notes recorded yet.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 3: DOCUMENT HUB & RAG ── -->
+                    <div id="panel-documents" class="tab-panel">
+                        <div class="documents-grid">
+                            <!-- Document Upload & List -->
+                            <div class="card doc-upload-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-file-arrow-up text-accent"></i> Upload Documents</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form id="doc-upload-form" onsubmit="handleDocumentUpload(event)">
+                                        <div class="drag-drop-area" id="drag-drop-area">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                            <p>Drag & Drop medical file here or click to browse</p>
+                                            <span>Supports PDF, PNG, JPG, DOCX (Max 5MB)</span>
+                                            <input type="file" id="doc-file-input" required style="display: none;">
+                                        </div>
+                                        <div id="file-info" class="file-info hidden">
+                                            <span id="selected-filename">filename.pdf</span>
+                                            <button type="button" class="btn-clear" onclick="clearSelectedFile()">&times;</button>
+                                        </div>
+                                        <div id="upload-error" class="error-msg hidden"></div>
+                                        <button type="submit" id="upload-btn" class="btn btn-primary" disabled>
+                                            Upload Document <i class="fa-solid fa-upload"></i>
+                                        </button>
+                                    </form>
+
+                                    <hr>
+
+                                    <h4>Patient Document Vault</h4>
+                                    <div id="document-vault-list" class="document-vault-list">
+                                        <!-- Dynamic list -->
+                                        <div class="list-empty">No documents uploaded yet.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RAG QA Interface -->
+                            <div class="card rag-qa-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-magnifying-glass-chart text-accent"></i> Clinical RAG Query</h3>
+                                </div>
+                                <div class="card-body RAG-chat-body">
+                                    <p class="section-help">Query the patient's entire medical history vault. The AI reads uploaded reports and clinical notes to give a grounded answer with citations.</p>
+                                    
+                                    <div id="rag-chat-history" class="rag-chat-history">
+                                        <!-- Chat interactions -->
+                                        <div class="chat-placeholder">
+                                            <i class="fa-solid fa-comments"></i>
+                                            <p>Ask a question about this patient. For example:<br><em>"What is the patient's history with chest pain?"</em></p>
+                                        </div>
+                                    </div>
+
+                                    <form id="rag-qa-form" class="rag-qa-form" onsubmit="handleRAGQuery(event)">
+                                        <input type="text" id="rag-question-input" placeholder="Type clinical question here..." required>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa-solid fa-paper-plane"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 4: PRESCRIPTIONS & INTERACTIONS ── -->
+                    <div id="panel-interactions" class="tab-panel">
+                        <div class="interactions-grid">
+                            <!-- Interaction Checker -->
+                            <div class="card drug-checker-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-shield-halved text-accent"></i> Drug-Drug Interaction Checker</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="section-help">Add active or proposed medications below to evaluate potential interactions, severity levels, and clinical adjustments.</p>
+                                    
+                                    <!-- Drug list builder -->
+                                    <div class="drug-builder-container">
+                                        <div class="drug-input-row">
+                                            <input type="text" id="drug-input" placeholder="e.g. Aspirin, Warfarin, Metformin">
+                                            <button class="btn btn-secondary" onclick="addDrugItem()">Add</button>
+                                        </div>
+                                        <div id="drug-pills-container" class="drug-pills-container">
+                                            <!-- Drug pills will render here -->
+                                        </div>
+                                    </div>
+
+                                    <button id="check-interactions-btn" class="btn btn-primary" onclick="checkDrugInteractions()" disabled>
+                                        Check Interactions <i class="fa-solid fa-circle-check"></i>
+                                    </button>
+
+                                    <div id="interaction-loader" class="loader-container hidden">
+                                        <div class="spinner"></div>
+                                        <p>Analyzing clinical databases for active chemical interactions...</p>
+                                    </div>
+
+                                    <div id="interaction-results" class="interaction-results hidden">
+                                        <!-- Interaction checklist rendering -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Encounter Logs -->
+                            <div class="card encounter-log-card">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-business-time text-accent"></i> Encounter History</h3>
+                                    <button class="btn btn-sm btn-outline" onclick="openAddEncounterModal()">
+                                        <i class="fa-solid fa-plus"></i> Log Encounter
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="encounter-logs-list" class="encounter-logs-list">
+                                        <!-- Dynamic content -->
+                                        <div class="list-empty">No clinical encounters recorded.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ── MODAL: ADD PATIENT ── -->
+    <div id="add-patient-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="patient-modal-title">Add New Patient</h2>
+                <button class="btn-close" onclick="closeAddPatientModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="patient-form" onsubmit="handlePatientFormSubmit(event)">
+                    <input type="hidden" id="patient-form-id">
+                    <div class="form-group">
+                        <label for="patient-name">Full Name</label>
+                        <input type="text" id="patient-name" required placeholder="e.g. Rajesh Kumar">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patient-age">Age</label>
+                            <input type="number" id="patient-age" required min="0" max="150" placeholder="45">
+                        </div>
+                        <div class="form-group">
+                            <label for="patient-gender">Gender</label>
+                            <select id="patient-gender" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer Not To Say</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="patient-blood">Blood Group</label>
+                            <select id="patient-blood">
+                                <option value="" selected>Unknown</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-allergies">Allergies (comma-separated)</label>
+                        <input type="text" id="patient-allergies" placeholder="e.g. Penicillin, Peanuts">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-history">Medical History Summary</label>
+                        <textarea id="patient-history" rows="3" placeholder="e.g. Hypertension since 2018, Type 2 diabetes."></textarea>
+                    </div>
+                    <div id="patient-form-error" class="error-msg hidden"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeAddPatientModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Patient</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MODAL: VIEW CHUNKS ── -->
+    <div id="chunks-modal" class="modal-overlay hidden">
+        <div class="modal-container modal-large">
+            <div class="modal-header">
+                <h2>RAG Vector Chunks Inspection</h2>
+                <button class="btn-close" onclick="closeChunksModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="section-help">Shows how this medical document was broken down and parsed for vector embeddings. Essential for compliance and trace verification.</p>
+                <div id="chunks-loader" class="loader-container">
+                    <div class="spinner"></div>
+                    <p>Fetching text splits...</p>
+                </div>
+                <div id="chunks-list" class="chunks-list hidden">
+                    <!-- Dynamic rendering of document chunks -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MODAL: ADD ENCOUNTER ── -->
+    <div id="encounter-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Log Clinical Encounter</h2>
+                <button class="btn-close" onclick="closeAddEncounterModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="encounter-form" onsubmit="handleEncounterSubmit(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="encounter-date">Encounter Date</label>
+                            <input type="datetime-local" id="encounter-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="encounter-type">Encounter Type</label>
+                            <input type="text" id="encounter-type" required placeholder="e.g. Follow-up, Routine check, Tele-consult">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="encounter-notes">Encounter Clinical Notes</label>
+                        <textarea id="encounter-notes" rows="4" placeholder="Log details of what occurred during the patient's visit..."></textarea>
+                    </div>
+                    <div id="encounter-error" class="error-msg hidden"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeAddEncounterModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Encounter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MODAL: EDIT SOAP NOTE ── -->
+    <div id="note-edit-modal" class="modal-overlay hidden">
+        <div class="modal-container modal-large">
+            <div class="modal-header">
+                <h2>Review & Finalize SOAP Note</h2>
+                <button class="btn-close" onclick="closeNoteEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="note-edit-form" onsubmit="handleNoteEditSubmit(event)">
+                    <input type="hidden" id="edit-note-id">
+                    <div class="form-group">
+                        <label for="edit-note-content">SOAP Note Content (Markdown format supported)</label>
+                        <textarea id="edit-note-content" required rows="14" placeholder="Edit clinical note..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-row">
+                            <input type="checkbox" id="edit-note-draft">
+                            <label for="edit-note-draft">Keep as Draft (Uncheck to Finalize)</label>
+                        </div>
+                    </div>
+                    <div id="note-edit-error" class="error-msg hidden"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeNoteEditModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Clinical Note</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

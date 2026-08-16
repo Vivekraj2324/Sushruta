@@ -1,0 +1,127 @@
+# =============================================================================
+# Sushruta — GitHub Actions CI Pipeline
+# =============================================================================
+#
+# This workflow runs on every push to `main` and on all pull requests.
+# It provisions a PostgreSQL 16 service container, installs Python 3.12
+# dependencies, and executes the full test suite with pytest-asyncio.
+#
+# Secrets / variables you may want to configure in your repo settings:
+#   - None required for CI; all test credentials are ephemeral (see below).
+# =============================================================================
+
+name: CI
+
+# ---------------------------------------------------------------------------
+# Triggers
+# ---------------------------------------------------------------------------
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# ---------------------------------------------------------------------------
+# Permissions — principle of least privilege
+# ---------------------------------------------------------------------------
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Python 3.12 / PostgreSQL 16)
+    runs-on: ubuntu-latest
+
+    # -----------------------------------------------------------------------
+    # Service containers — ephemeral PostgreSQL for integration tests
+    # -----------------------------------------------------------------------
+    # GitHub Actions spins up this container alongside the runner.  The
+    # health check ensures the database is accepting connections before
+    # any test step runs.
+    # -----------------------------------------------------------------------
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: sushruta_test
+          POSTGRES_PASSWORD: sushruta_test_password
+          POSTGRES_DB: sushruta_test
+        ports:
+          - 5432:5432
+        # -------------------------------------------------------------------
+        # Health check — wait until pg_isready succeeds before proceeding
+        # -------------------------------------------------------------------
+        options: >-
+          --health-cmd "pg_isready -U sushruta_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 10s
+
+    # -----------------------------------------------------------------------
+    # Environment variables — available to every step in this job
+    # -----------------------------------------------------------------------
+    # These mirror the application's expected env vars but point at the
+    # ephemeral CI database defined above.
+    # -----------------------------------------------------------------------
+    env:
+      DATABASE_URL: postgresql+asyncpg://sushruta_test:sushruta_test_password@localhost:5432/sushruta_test
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      ENVIRONMENT: testing
+      DEBUG: "false"
+
+    steps:
+      # ---------------------------------------------------------------------
+      # 1. Check out the repository
+      # ---------------------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------------
+      # 2. Set up Python 3.12
+      # ---------------------------------------------------------------------
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # ---------------------------------------------------------------------
+      # 3. Cache pip dependencies to speed up subsequent runs
+      # ---------------------------------------------------------------------
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # ---------------------------------------------------------------------
+      # 4. Install Python dependencies
+      # ---------------------------------------------------------------------
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ---------------------------------------------------------------------
+      # 5. Run database migrations against the test database
+      # ---------------------------------------------------------------------
+      # This ensures the test DB schema is up-to-date before tests execute.
+      # If no migrations exist yet, this step is a no-op.
+      # ---------------------------------------------------------------------
+      - name: Run Alembic migrations
+        run: alembic upgrade head
+
+      # ---------------------------------------------------------------------
+      # 6. Execute the test suite
+      # ---------------------------------------------------------------------
+      # --asyncio-mode=auto: automatically detect and run async test
+      #   functions without requiring explicit marks on every test.
+      # -v: verbose output so individual test results are visible in logs.
+      # --tb=short: compact tracebacks for readability.
+      # ---------------------------------------------------------------------
+      - name: Run tests
+        run: pytest -v --tb=short --asyncio-mode=auto

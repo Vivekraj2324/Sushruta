@@ -1,0 +1,90 @@
+# =============================================================================
+# Sushruta — Clinical Workflow Automation Platform
+# Docker Compose Configuration
+# =============================================================================
+#
+# This file provisions the local development PostgreSQL 16 database.
+#
+# Usage:
+#   docker compose up -d          # Start the database in the background
+#   docker compose down            # Stop the database (data persists)
+#   docker compose down -v         # Stop AND destroy all data volumes
+#   docker compose logs -f db      # Tail the database logs
+#
+# The database is accessible at localhost:5432 with the credentials below.
+# In production, swap these for secrets managed via Docker Swarm / Vault / etc.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Primary data store
+  # ---------------------------------------------------------------------------
+  # Alpine variant keeps the image small (~80 MB compressed).
+  # Data is persisted to a named volume so `docker compose down` is non-destructive.
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: sushruta_db
+
+    # -------------------------------------------------------------------------
+    # Environment — database bootstrap credentials
+    # -------------------------------------------------------------------------
+    # These are used ONLY on first run to create the default database and user.
+    # Changing them after the volume is initialised has no effect — you would
+    # need to `docker compose down -v` and recreate.
+    # -------------------------------------------------------------------------
+    environment:
+      POSTGRES_USER: sushruta
+      POSTGRES_PASSWORD: sushruta_dev_password
+      POSTGRES_DB: sushruta
+
+    # -------------------------------------------------------------------------
+    # Port mapping — expose Postgres on the standard port
+    # -------------------------------------------------------------------------
+    # Format: host_port:container_port
+    # If port 5432 is already in use on your host, change the left-hand side,
+    # e.g. "5433:5432", and update DATABASE_URL in your .env accordingly.
+    # -------------------------------------------------------------------------
+    ports:
+      - "5432:5432"
+
+    # -------------------------------------------------------------------------
+    # Volume — persistent data storage
+    # -------------------------------------------------------------------------
+    # A named volume ensures data survives container recreation.
+    # The path /var/lib/postgresql/data is where Postgres stores its data files.
+    # -------------------------------------------------------------------------
+    volumes:
+      - sushruta_pgdata:/var/lib/postgresql/data
+
+    # -------------------------------------------------------------------------
+    # Healthcheck — verify the database is accepting connections
+    # -------------------------------------------------------------------------
+    # Other services (or CI pipelines) can depend on this to wait until Postgres
+    # is genuinely ready, not just until the container starts.
+    #   interval:    time between checks
+    #   timeout:     max time a single check can take
+    #   retries:     consecutive failures before marking "unhealthy"
+    #   start_period: grace period during initial startup
+    # -------------------------------------------------------------------------
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sushruta"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # -------------------------------------------------------------------------
+    # Restart policy — auto-recover from crashes, but respect manual stops
+    # -------------------------------------------------------------------------
+    restart: unless-stopped
+
+# =============================================================================
+# Named volumes
+# =============================================================================
+# Declaring the volume here lets Docker manage it. Inspect with:
+#   docker volume inspect sushruta_sushruta_pgdata
+# =============================================================================
+volumes:
+  sushruta_pgdata:
+    driver: local
