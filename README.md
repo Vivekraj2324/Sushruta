@@ -1,10 +1,17 @@
 # 🏥 Sushruta — Clinical Workflow Automation Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-00c7b7?style=for-the-badge&logo=render&logoColor=white)](https://sushruta-bzgf.onrender.com/)
+[![API Docs](https://img.shields.io/badge/Swagger%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://sushruta-bzgf.onrender.com/docs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg?style=for-the-badge)](LICENSE)
+
 > **"Every clinical note tells a patient's story. Sushruta ensures physicians spend their time treating, not documenting."**
 > 
 > Named after **Sushruta** (सुश्रुत, c. 6th century BCE), the ancient Indian physician regarded as the "Father of Surgery" and author of the **Suśruta Saṁhitā** — one of the foundational texts of medicine and surgery.
 >
 > Sushruta is a production-grade clinical workflow automation platform that streamlines patient management, AI-assisted SOAP documentation (Scribe), drug interaction checking, referral letter generation, and intelligent medical document querying (RAG) for healthcare professionals. Built with a fully asynchronous Python backend (FastAPI), modern EHR dashboard, and PostgreSQL (pgvector).
+
+🌐 **Live Application:** [https://sushruta-bzgf.onrender.com](https://sushruta-bzgf.onrender.com)  
+📑 **Interactive API Docs:** [https://sushruta-bzgf.onrender.com/docs](https://sushruta-bzgf.onrender.com/docs)
 
 ---
 
@@ -194,6 +201,10 @@ For local development:
 *   Local application server: **http://localhost:8000**
 *   Interactive OpenAPI Swagger docs: **http://localhost:8000/docs**
 *   Alternative ReDoc documentation: **http://localhost:8000/redoc**
+
+For the live production deployment:
+*   Live production server: **[https://sushruta-bzgf.onrender.com](https://sushruta-bzgf.onrender.com)**
+*   Production OpenAPI Swagger docs: **[https://sushruta-bzgf.onrender.com/docs](https://sushruta-bzgf.onrender.com/docs)**
 
 ---
 
