@@ -31,6 +31,4 @@ COPY . .
 EXPOSE 8000
 
 # Run database migrations and start the application
-# Note: In production, you'd typically run migrations via a release phase,
-# but for simple web services, a startup script is convenient.
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
